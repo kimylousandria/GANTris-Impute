@@ -1,0 +1,21 @@
+#untuk virtual envviroment
+venv/
+env/
+
+#file sampah
+*.py[cod]
+*$py.class
+
+#pytorch yg ukuran besar
+*.pth
+*.pt
+*.weights
+
+#IDE
+.vscode/
+.idea/
+
+#sampah operasi
+.DS_store
+Thumbs.db
+
