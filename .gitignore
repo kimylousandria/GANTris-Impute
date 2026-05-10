@@ -1,21 +1,18 @@
-#untuk virtual envviroment
+# Lingkungan Virtual Python
 venv/
-env/
+__pycache__/
+.pytest_cache/
 
-#file sampah
-*.py[cod]
-*$py.class
+# Data Biologis & Dataset (Ukuran Besar)
+*.csv
+*.fasta
+*.txt
 
-#pytorch yg ukuran besar
+# Artefak Model AI (Binary Weights)
 *.pth
 *.pt
-*.weights
+*.onnx
 
-#IDE
-.vscode/
-.idea/
-
-#sampah operasi
-.DS_store
+# File Sistem (Mac/Windows)
+.DS_Store
 Thumbs.db
-

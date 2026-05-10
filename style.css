@@ -1,0 +1,290 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
+
+/* ── Root variables ── */
+:root {
+    --bg:       #030712;
+    --panel:    #0d1117;
+    --border:   #1f2937;
+    --accent:   #00ffc3;
+    --A:        #f43f5e;
+    --T:        #38bdf8;
+    --C:        #34d399;
+    --G:        #fbbf24;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+}
+
+/* ── Global resets ── */
+html, body, [data-testid="stAppViewContainer"] {
+    background: var(--bg) !important;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+}
+[data-testid="stSidebar"] {
+    background: var(--panel) !important;
+    border-right: 1px solid var(--border);
+}
+
+/* ── Scrolling DNA ticker at top ── */
+.dna-ticker {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    white-space: nowrap;
+}
+.dna-ticker-inner {
+    display: inline-block;
+    animation: ticker 18s linear infinite;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+.dna-ticker-inner .bA { color: var(--A); }
+.dna-ticker-inner .bT { color: var(--T); }
+.dna-ticker-inner .bC { color: var(--C); }
+.dna-ticker-inner .bG { color: var(--G); }
+.dna-ticker-inner .bN { color: var(--muted); }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── Title ── */
+.hero-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(22px, 3vw, 38px);
+    font-weight: 900;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--accent), #60a5fa, var(--accent));
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+    margin: 0;
+}
+@keyframes shimmer { to { background-position: 200% center; } }
+.hero-sub {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 2px;
+    margin-top: 6px;
+}
+
+/* ── Section labels ── */
+.section-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* ── Input DNA display ── */
+.dna-input-box {
+    background: #0a0f1a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 22px;
+    letter-spacing: 6px;
+    text-align: center;
+    margin: 12px 0;
+    position: relative;
+    overflow: hidden;
+}
+.dna-input-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,255,195,0.03) 0%, transparent 60%);
+    pointer-events: none;
+}
+.dna-input-box .bA { color: var(--A); text-shadow: 0 0 12px rgba(244,63,94,0.5); }
+.dna-input-box .bT { color: var(--T); text-shadow: 0 0 12px rgba(56,189,248,0.5); }
+.dna-input-box .bC { color: var(--C); text-shadow: 0 0 12px rgba(52,211,153,0.5); }
+.dna-input-box .bG { color: var(--G); text-shadow: 0 0 12px rgba(251,191,36,0.5); }
+.dna-input-box .bN { color: var(--muted); animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ── Tetris blocks ── */
+.block-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+.tblock {
+    border-radius: 10px;
+    padding: 14px 6px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    animation: blockDrop 0.4s cubic-bezier(.22,1,.36,1) both;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.tblock::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 40%;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px 10px 60% 60%;
+    pointer-events: none;
+}
+@keyframes blockDrop {
+    from { transform: translateY(-30px) scale(0.8); opacity: 0; }
+    to   { transform: translateY(0)     scale(1);   opacity: 1; }
+}
+.tblock-A { background: linear-gradient(145deg, #f43f5e, #9f1239); box-shadow: 0 6px 20px rgba(244,63,94,0.4); }
+.tblock-T { background: linear-gradient(145deg, #38bdf8, #0369a1); box-shadow: 0 6px 20px rgba(56,189,248,0.4); }
+.tblock-C { background: linear-gradient(145deg, #34d399, #065f46); box-shadow: 0 6px 20px rgba(52,211,153,0.4); }
+.tblock-G { background: linear-gradient(145deg, #fbbf24, #92400e); box-shadow: 0 6px 20px rgba(251,191,36,0.4); }
+
+.tblock-letter {
+    font-family: 'Orbitron', monospace;
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    line-height: 1;
+}
+.tblock-pos {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+    margin-top: 3px;
+}
+.tblock-conf {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.9);
+    margin-top: 6px;
+}
+.conf-bar {
+    width: 80%;
+    height: 4px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 2px;
+    margin: 5px auto 0;
+    overflow: hidden;
+}
+.conf-fill {
+    height: 100%;
+    background: rgba(255,255,255,0.7);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+
+/* ── Probability matrix table ── */
+.prob-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    margin-top: 10px;
+}
+.prob-table th {
+    color: var(--muted);
+    letter-spacing: 2px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+.prob-table td {
+    padding: 5px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(31,41,55,0.5);
+}
+.prob-table tr:hover td { background: rgba(255,255,255,0.02); }
+.prob-best { font-weight: bold; border-radius: 4px; padding: 2px 6px; }
+.prob-A-best { background: rgba(244,63,94,0.2); color: var(--A); }
+.prob-T-best { background: rgba(56,189,248,0.2); color: var(--T); }
+.prob-C-best { background: rgba(52,211,153,0.2); color: var(--C); }
+.prob-G-best { background: rgba(251,191,36,0.2); color: var(--G); }
+
+/* ── Stats card ── */
+.stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+}
+.stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+/* ── Legend ── */
+.legend-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Share Tech Mono', monospace; font-size: 12px;
+}
+.legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+
+/* ── Buttons via Streamlit hack ── */
+div[data-testid="stButton"] > button {
+    background: linear-gradient(135deg, #00ffc3, #0ea5e9) !important;
+    color: #000 !important;
+    font-family: 'Orbitron', monospace !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    letter-spacing: 2px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px 20px !important;
+    transition: all 0.2s !important;
+    box-shadow: 0 0 20px rgba(0,255,195,0.3) !important;
+}
+div[data-testid="stButton"] > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 0 30px rgba(0,255,195,0.6) !important;
+}
+
+/* ── Text inputs ── */
+div[data-testid="stTextInput"] input,
+div[data-testid="stTextArea"] textarea {
+    background: #0a0f1a !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    font-size: 16px !important;
+    letter-spacing: 3px !important;
+    border-radius: 8px !important;
+}
+div[data-testid="stTextInput"] input:focus,
+div[data-testid="stTextArea"] textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 1px var(--accent) !important;
+}
+
+/* ── Misc ── */
+.stSpinner > div { border-top-color: var(--accent) !important; }
+hr { border-color: var(--border) !important; }
+.stAlert { background: var(--panel) !important; border: 1px solid var(--border) !important; }
