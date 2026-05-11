@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 
 # Hyperparameters
-SEQ_LENGTH = 15
-BASES = 4
+SEQ_LENGTH = 17
+BASES = 7
 
 class Generator(nn.Module):
     def __init__(self):
