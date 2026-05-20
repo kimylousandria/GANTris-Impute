@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 SEQ_LENGTH = 17
-BASES = 7
+BASES = 4
 INPUT_DIM = SEQ_LENGTH * BASES
 
 class Generator(nn.Module):

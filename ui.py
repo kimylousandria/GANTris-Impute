@@ -7,7 +7,7 @@ import time
 #  PARAM & MODEL
 # ─────────────────────────────────────────────
 SEQ_LENGTH = 17
-BASES = 7
+BASES = 4
 
 class Generator(torch.nn.Module):
     def __init__(self):
