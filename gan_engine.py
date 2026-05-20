@@ -1,34 +1,38 @@
 import torch
 import torch.nn as nn
 
-# Hyperparameters
 SEQ_LENGTH = 17
 BASES = 7
+INPUT_DIM = SEQ_LENGTH * BASES
 
 class Generator(nn.Module):
     def __init__(self):
         super().__init__()
+        # Menambah kedalaman (Depth) untuk menangkap pola DNA BRCA1 yang kompleks
         self.main = nn.Sequential(
-            nn.Linear(SEQ_LENGTH * BASES, 128),
+            nn.Linear(INPUT_DIM, 256),
             nn.LeakyReLU(0.2),
-            nn.Linear(128, 256),
+            nn.Linear(256, 128),
             nn.LeakyReLU(0.2),
-            nn.Linear(256, SEQ_LENGTH * BASES),
-            nn.Softmax(dim=-1) # Output berupa probabilitas 0-1
+            nn.Linear(128, INPUT_DIM)
         )
 
     def forward(self, x):
-        # x shape: [batch, seq, bases]
-        batch_size = x.size(0)
-        x = x.view(batch_size, -1)
-        out = self.main(x)
-        return out.view(batch_size, SEQ_LENGTH, BASES)
+        b, s, f = x.shape
+        flat_x = x.view(b, -1)
+        logits = self.main(flat_x)
+        out = torch.softmax(logits.view(b, s, f), dim=-1)
+        return out
 
 class Discriminator(nn.Module):
     def __init__(self):
         super().__init__()
+        # Mengimbangi kepintaran Generator dengan lapisan ekstra dan Dropout
         self.main = nn.Sequential(
-            nn.Linear(SEQ_LENGTH * BASES, 128),
+            nn.Linear(INPUT_DIM, 256),
+            nn.LeakyReLU(0.2),
+            nn.Dropout(0.3),  # Mencegah Overfitting pada data kanker
+            nn.Linear(256, 128),
             nn.LeakyReLU(0.2),
             nn.Dropout(0.3),
             nn.Linear(128, 1),
@@ -36,5 +40,6 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, x):
-        x = x.view(x.size(0), -1)
-        return self.main(x)
+        b = x.size(0)
+        flat_x = x.view(b, -1)
+        return self.main(flat_x)

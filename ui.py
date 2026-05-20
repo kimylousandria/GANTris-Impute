@@ -12,11 +12,18 @@ BASES = 7
 class Generator(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc = torch.nn.Linear(SEQ_LENGTH * BASES, SEQ_LENGTH * BASES)
+        self.main = torch.nn.Sequential(
+            torch.nn.Linear(SEQ_LENGTH * BASES, 256),
+            torch.nn.LeakyReLU(0.2),
+            torch.nn.Linear(256, 128),
+            torch.nn.LeakyReLU(0.2),
+            torch.nn.Linear(128, SEQ_LENGTH * BASES)
+        )
+        
     def forward(self, x):
         b, s, f = x.shape
-        out = torch.softmax(self.fc(x.view(b, -1)).view(b, s, f), dim=-1)
-        return out
+        logits = self.main(x.view(b, -1)).view(b, s, f)
+        return torch.softmax(logits, dim=-1)
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -176,11 +183,19 @@ with col_in:
     # Saat tombol diklik: jalankan model dan simpan hasil ke session_state
     if run_btn:
         generator = load_model()
-        with st.spinner("⚡ Memproses tensor GAN..."):
+        with st.spinner("⚡ Memproses tensor BRCA1..."):
             time.sleep(0.4)
             inp  = encode_input(clean_seq)
             pred = generator(inp).detach().numpy()[0]
 
+            # --- PENAMBAHAN LOGIKA MASKING ---
+            # 1. Matikan probabilitas untuk indeks 4 (N), 5 (R), 6 (Y)
+            pred[:, 4:] = 0.0
+            
+            # 2. Re-normalisasi probabilitas A, T, C, G agar totalnya kembali 1.0 (100%)
+            row_sums = pred.sum(axis=1, keepdims=True)
+            pred = np.divide(pred, row_sums, out=np.zeros_like(pred), where=row_sums!=0)
+            # ---------------------------------
         # Simpan hasil agar tidak hilang saat widget lain berinteraksi
         st.session_state["pred_result"]      = pred
         st.session_state["clean_seq_result"] = clean_seq
@@ -213,13 +228,19 @@ with col_out:
         # Tetris Blocks
         blocks_html = '<div class="block-grid">'
         for i in range(SEQ_LENGTH):
+            is_imputed = clean_used[i] == 'N'
+            
+            if not is_imputed:
+                continue
+            
+            # Jika lolos filter (artinya ini adalah 'N'), jalankan render:
             base       = BASES_MAP[best_idxs[i]]
             conf       = conf_scores[i]
             delay      = i * 0.04
-            is_imputed = clean_used[i] == 'N'
-            badge      = '★ BARU' if is_imputed else '✓ ORI'
-            badge_col  = '#fbbf24' if is_imputed else '#64748b'
+            badge      = '★ BARU'      # Statis, karena pasti hasil imputasi
+            badge_col  = '#fbbf24'     # Statis, warna kuning peringatan
             opacity    = 1.0 if conf >= conf_filter else 0.2
+
 
             blocks_html += f"""
             <div class="tblock tblock-{base}" style="animation-delay:{delay}s; opacity:{opacity};">
@@ -260,22 +281,33 @@ with col_out:
         # ── Matriks Probabilitas ──
         if show_matrix:
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown('<div class="section-label">▷ MATRIKS PROBABILITAS LENGKAP</div>', unsafe_allow_html=True)
-            rows = ""
-            for i in range(SEQ_LENGTH):
-                orig  = clean_used[i]
-                probs = pred[i]
-                best  = int(best_idxs[i])
-                cells = ""
-                for j, b in enumerate("ATCG"):
-                    pct = probs[j] * 100
-                    if j == best:
-                        cells += f'<td><span class="prob-best prob-{b}-best">{pct:.1f}%</span></td>'
-                    else:
-                        cells += f'<td style="color:#475569">{pct:.1f}%</td>'
-                tag = "★" if orig == "N" else ""
-                rows += f"<tr><td style='color:#64748b;font-size:10px'>POS {i+1:02d} {tag}</td>{cells}</tr>"
+            
+            n_positions = [i for i in range(SEQ_LENGTH) if clean_used[i] == 'N']
+            st.markdown(
+                f'<div class="section-label">▷ MATRIKS PROBABILITAS — {len(n_positions)} POSISI DIIMPUTASI</div>',
+                unsafe_allow_html=True
+            )
+        
+        rows = ""
+        for i in range(SEQ_LENGTH):
+            orig = clean_used[i]
+            if orig != 'N':
+                continue
+            
+            probs = pred[i]
+            best  = int(best_idxs[i])
+            cells = ""
+            for j, b in enumerate("ATCG"):
+                pct = probs[j] * 100
+                if j == best:
+                    cells += f'<td><span class="prob-best prob-{b}-best">{pct:.1f}%</span></td>'
+                else:
+                    cells += f'<td style="color:#475569">{pct:.1f}%</td>'
+            rows += f"<tr><td style='color:#64748b;font-size:10px'>POS {i+1:02d} ★</td>{cells}</tr>"
 
+        if not rows:
+            st.info("Tidak ada posisi N — semua basa sudah diketahui.")
+        else:
             table_html = f"""
             <div style="background:#0a0f1a;border:1px solid #1f2937;border-radius:10px;padding:14px;overflow-x:auto;">
                 <table class="prob-table">
@@ -294,5 +326,4 @@ with col_out:
             """
             st.markdown(table_html, unsafe_allow_html=True)
             st.caption("★ = posisi yang diimputasi dari N")
-
-        st.success(f"✅ Imputasi selesai untuk sekuens: {clean_used}")
+            st.success(f"✅ Imputasi selesai untuk sekuens: {clean_used}")
