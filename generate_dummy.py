@@ -3,7 +3,7 @@ import random
 
 # Konfigurasi
 NUM_SAMPLES = 2000
-SEQ_LENGTH = 15
+SEQ_LENGTH = 17
 BASES = ['A', 'T', 'C', 'G']
 
 print("⚙️ Membangun dataset DNA sintetik...")

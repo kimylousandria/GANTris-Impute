@@ -3,7 +3,7 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 
 # Konfigurasi Arsitektur
-SEQ_LENGTH = 15
+SEQ_LENGTH = 17
 BASES = 4
 BASE_MAP = {'A': 0, 'T': 1, 'C': 2, 'G': 3}
 
