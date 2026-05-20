@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from gan_engine import Generator, Discriminator
-from data_loader import get_loader
+from data_loader import get_dataloader
 
 def train_gan(epochs=1000, batch_size=32):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -19,7 +19,7 @@ def train_gan(epochs=1000, batch_size=32):
     optimizerG = optim.Adam(netG.parameters(), lr=LR_G, betas=(0.5, 0.999))
     optimizerD = optim.Adam(netD.parameters(), lr=LR_D, betas=(0.5, 0.999))
 
-    dataloader = get_loader(batch_size=batch_size)
+    dataloader = get_dataloader(batch_size=batch_size)
 
     for epoch in range(epochs):
         for i, real_dna in enumerate(dataloader):
