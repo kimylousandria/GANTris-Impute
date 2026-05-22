@@ -2,6 +2,8 @@ import streamlit as st
 import torch
 import numpy as np
 import time
+import torch.nn as nn
+import torch.nn.functional as F
 
 # ─────────────────────────────────────────────
 #  PARAM & MODEL
@@ -9,21 +11,31 @@ import time
 SEQ_LENGTH = 17
 BASES = 4
 
-class Generator(torch.nn.Module):
-    def __init__(self):
+class Generator(nn.Module):
+    def __init__(self, z_dim=100):
         super().__init__()
-        self.main = torch.nn.Sequential(
-            torch.nn.Linear(SEQ_LENGTH * BASES, 256),
-            torch.nn.LeakyReLU(0.2),
-            torch.nn.Linear(256, 128),
-            torch.nn.LeakyReLU(0.2),
-            torch.nn.Linear(128, SEQ_LENGTH * BASES)
-        )
+        self.z_dim = z_dim
+        self.fc = nn.Linear(z_dim, 128 * SEQ_LENGTH)
         
-    def forward(self, x):
-        b, s, f = x.shape
-        logits = self.main(x.view(b, -1)).view(b, s, f)
-        return torch.softmax(logits, dim=-1)
+        self.conv_blocks = nn.Sequential(
+            nn.Conv1d(128, 64, kernel_size=3, padding=1),
+            nn.BatchNorm1d(64),
+            nn.ReLU(inplace=True),
+            nn.Conv1d(64, BASES, kernel_size=3, padding=1)
+        )
+
+    def forward(self, z, temperature=0.3):
+        # 1. Transformasi Laten
+        x = self.fc(z)
+        x = x.view(-1, 128, SEQ_LENGTH)
+        
+        
+        logits = self.conv_blocks(x)
+        
+        
+        logits = logits.permute(0, 2, 1)
+        
+        return F.softmax(logits / temperature, dim=-1)
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -186,7 +198,9 @@ with col_in:
         with st.spinner("⚡ Memproses tensor BRCA1..."):
             time.sleep(0.4)
             inp  = encode_input(clean_seq)
-            pred = generator(inp).detach().numpy()[0]
+            z = torch.randn(1, 100)
+
+            pred = generator(z, temperature=0.3).detach().numpy()[0]
 
             # --- PENAMBAHAN LOGIKA MASKING ---
             # 1. Matikan probabilitas untuk indeks 4 (N), 5 (R), 6 (Y)
